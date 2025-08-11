@@ -30,8 +30,8 @@ class TransportSchedules(Base):
     destination = Column(String(100), nullable=False)    # scraped destination
     arrival_time = Column(DateTime, nullable=False)      # Changed to DateTime
     duration = Column(String(50), nullable=False)
-    distance = Column(String(50), nullable=False)
-    halts = Column(String(100), nullable=False)
+    distance = Column(String(50), nullable=True)
+    halts = Column(String(100), nullable=True)
     origin_code = Column(String(10), nullable=True)
     destination_code = Column(String(10), nullable=True)
     origin_query = Column(String(100), nullable=False)     # Added - from request

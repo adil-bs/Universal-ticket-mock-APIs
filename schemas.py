@@ -9,18 +9,14 @@ class TravelAvailabilityQuery(BaseModel):
     origin: str
     destination: str
     datetime: str
-    seat_class: str
-
 
 class BookingRequest(BaseModel):
     user_id: str
     schedule_id: int
     # seat_class: Optional[str] = None
 
-
 class CancellationRequest(BaseModel):
     booking_id: str
-
 
 class BookingResponse(BaseModel):
     booking_id: str
@@ -52,8 +48,8 @@ class TransportScheduleResponse(BaseModel):
     destination: str = ""
     arrival_time: str = ""
     duration: str = ""
-    distance: str = ""
-    halts: str = ""
+    distance: Optional[str] = None  # Can be str or None
+    halts: Optional[str] = None 
     origin_code: str = ""
     destination_code: str = ""
     seat_availability: List[SeatAvailabilityResponse] = []

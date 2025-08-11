@@ -320,10 +320,9 @@ class TransportScraper:
             WebDriverWait(self.driver, 30).until(
                 EC.presence_of_element_located((By.CSS_SELECTOR, ".MuiPaper-root"))
             )
-            
+
             # Extract train data
             train_blocks = self.driver.find_elements(By.CSS_SELECTOR, ".MuiPaper-root.MuiPaper-elevation1.css-we1py8")
-            
             # Filter main trains (exclude alternatives)
             filtered_train_blocks = []
             for train in train_blocks:
@@ -357,7 +356,7 @@ class TransportScraper:
         except Exception as e:
             return TravelAvailabilityResponse(
                 input=query, schedules=[], status="error",
-                message=f"Scraping error: {str(e)}", source="scraper"
+                message=f"Scraping error : {str(e)}", source="scraper"
             )
         finally:
             if self.driver:
@@ -486,17 +485,21 @@ class TransportScraper:
         mins_elem = train_element.find_element(By.CSS_SELECTOR, ".css-0 > span:nth-child(2)")
         duration = f"{duration_elem.text} {mins_elem.text}"
         
-        journey_info = train_element.find_element(By.CSS_SELECTOR, ".css-1305zog:nth-child(2)")
-        journey_text = journey_info.text.strip()
-        if '|' in journey_text:
-            parts = journey_text.split('|')
-            if len(parts) >= 2:
-                halts = parts[0].strip()
-                distance = parts[1].strip()
-        
+        try:
+            journey_info = train_element.find_element(By.CSS_SELECTOR, ".css-1305zog:nth-child(2)")
+            journey_text = journey_info.text.strip()
+            if '|' in journey_text:
+                parts = journey_text.split('|')
+                if len(parts) >= 2:
+                    halts = parts[0].strip()
+                    distance = parts[1].strip()
+        except Exception:
+            halts = None
+            distance = None
+
         # Extract seat availability
         seat_blocks = train_element.find_elements(By.CSS_SELECTOR, "[id^='availabilityContainer_'] > div.MuiPaper-root")
-        
+
         for seat in seat_blocks:
             if "taptorefresh" in seat.get_attribute("innerHTML").lower():
                 continue
