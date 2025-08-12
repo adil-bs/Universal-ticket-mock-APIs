@@ -1,5 +1,5 @@
 import os
-from sqlalchemy import create_engine, Column, Integer, String, DateTime, Text, ForeignKey, Float
+from sqlalchemy import create_engine, Column, Integer, String, DateTime, Text, ForeignKey, Float, JSON
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
 from sqlalchemy.dialects.postgresql import UUID
@@ -37,7 +37,6 @@ class TransportSchedules(Base):
     origin_query = Column(String(100), nullable=False)     # Added - from request
     destination_query = Column(String(100), nullable=False) # Added - from request
     created_at = Column(DateTime, default=datetime.utcnow)
-    # Removed search_date column
 
     seat_availability = relationship("SeatAvailability", back_populates="schedule", cascade="all, delete-orphan")
 
@@ -59,8 +58,9 @@ class Bookings(Base):
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()), index=True)
     user_id = Column(String(100), nullable=False)
     schedule_id = Column(Integer, ForeignKey("transport_schedules.id"), nullable=False)
-    booking_status = Column(String(20), default="confirmed")  # confirmed, cancelled
+    booking_status = Column(String(20), default="confirmed")  # confirmed, waitlist, regret, cancelled
     booking_date = Column(DateTime, default=datetime.utcnow)
+    seat_preferences = Column(JSON, nullable=True)  # store selected seat preferences
 
     schedule = relationship("TransportSchedules")
 

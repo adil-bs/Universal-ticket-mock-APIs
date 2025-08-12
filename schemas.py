@@ -1,6 +1,5 @@
 from pydantic import BaseModel
-from typing import List, Optional
-from datetime import datetime
+from typing import List, Optional, Dict, Any
 
 
 # Travel Availability Query
@@ -10,10 +9,17 @@ class TravelAvailabilityQuery(BaseModel):
     destination: str
     datetime: str
 
+class SeatPreferences(BaseModel):
+    seat_class: str
+    seat_position: Optional[str] = None  # window, aisle, upper, lower, etc
+    coach: Optional[str] = None
+    seat_number: Optional[str] = None
+    extra: Optional[Dict[str, Any]] = None
+
 class BookingRequest(BaseModel):
     user_id: str
     schedule_id: int
-    # seat_class: Optional[str] = None
+    seat_preferences: SeatPreferences
 
 class CancellationRequest(BaseModel):
     booking_id: str
@@ -22,6 +28,17 @@ class BookingResponse(BaseModel):
     booking_id: str
     status: str
     message: str
+    booking_status: Optional[str] = None  # confirmed, waitlist, regret
+
+
+class BookingDetail(BaseModel):
+    booking_id: str
+    user_id: str
+    schedule_id: int
+    booking_status: str
+    booking_date: Optional[str] = None
+    seat_preferences: Optional[Dict[str, Any]] = None
+    schedule: Optional["TransportScheduleResponse"] = None
 
 
 class CancellationResponse(BaseModel):

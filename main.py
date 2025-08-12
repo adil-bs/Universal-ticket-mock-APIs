@@ -10,13 +10,16 @@ from schemas import (
     BookingResponse,
     CancellationResponse
 )
-from utils import create_booking, cancel_booking
+from utils import (
+    create_booking,
+    cancel_booking,
+    get_user_bookings,
+    get_booking_details,
+)
 from transport_scraper import TransportScraper
 import asyncio
 import concurrent.futures
-import os
 
-# Initialize database on startup
 try:
     init_database()
     print("Database initialized successfully!")
@@ -114,8 +117,8 @@ def book_ticket(
         result = create_booking(
             user_id=request.user_id,
             schedule_id=request.schedule_id,
-            # seat_class=request.seat_class,
-            db=db
+            seat_preferences=request.seat_preferences,
+            db=db,
         )
         
         if result.status == "error":
@@ -165,15 +168,29 @@ def cancel_ticket(
         )
 
 
-@app.get("/health")
-def health_check():
-    """Health check endpoint for monitoring"""
-    return {
-        "status": "healthy",
-        "service": "Universal Ticketing API",
-        "version": "2.0.0",
-        "database": "connected"
-    }
+@app.get("/api/bookings/{user_id}")
+def list_user_bookings(user_id: str, db: Session = Depends(get_db)):
+    bookings = get_user_bookings(user_id=user_id, db=db)
+    # Return minimal list; consumer can call details endpoint for full info
+    return [
+        {
+            "booking_id": b.id,
+            "user_id": b.user_id,
+            "schedule_id": b.schedule_id,
+            "booking_status": b.booking_status,
+            "booking_date": b.booking_date.isoformat() if b.booking_date else None,
+            "seat_preferences": b.seat_preferences,
+        }
+        for b in bookings
+    ]
+
+
+@app.get("/api/booking/{booking_id}")
+def get_booking(booking_id: str, db: Session = Depends(get_db)):
+    detail = get_booking_details(booking_id=booking_id, db=db)
+    if not detail:
+        raise HTTPException(status_code=404, detail="Booking not found")
+    return detail
 
 
 # Additional utility endpoints
@@ -187,6 +204,17 @@ def get_supported_transport_modes():
     }
 
 
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+@app.get("/health")
+def health_check():
+    """Health check endpoint for monitoring"""
+    return {
+        "status": "healthy",
+        "service": "Universal Ticketing API",
+        "version": "2.0.0",
+        "database": "connected"
+    }
+
+
+# if __name__ == "__main__":
+#     import uvicorn
+#     uvicorn.run(app, host="0.0.0.0", port=8000)
