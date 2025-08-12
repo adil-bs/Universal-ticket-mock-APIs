@@ -171,7 +171,7 @@ def cancel_ticket(
 @app.get("/api/bookings/{user_id}")
 def list_user_bookings(user_id: str, db: Session = Depends(get_db)):
     bookings = get_user_bookings(user_id=user_id, db=db)
-    # Return minimal list; consumer can call details endpoint for full info
+    # Return minimal list
     return [
         {
             "booking_id": b.id,
@@ -215,6 +215,6 @@ def health_check():
     }
 
 
-# if __name__ == "__main__":
-#     import uvicorn
-#     uvicorn.run(app, host="0.0.0.0", port=8000)
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)

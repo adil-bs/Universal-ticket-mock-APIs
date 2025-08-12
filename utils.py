@@ -89,6 +89,16 @@ def create_booking(
 
         outcome = decide_train_booking_outcome(seat_status_row.status)
         
+        if outcome == "regret":
+            return BookingResponse(
+                booking_id="",
+                status="failed",
+                message=(f"No seats available ({seat_preferences.seat_class}) "
+                         f"for {schedule.transport_name} ({schedule.transport_id}) "
+                         f"from {schedule.origin} to {schedule.destination}"),
+                booking_status=outcome
+            )
+            
         # Create new booking with collision-safe id generation
         booking_id = str(uuid.uuid4())
 
@@ -216,7 +226,7 @@ def get_booking_details(booking_id: str, db: Session = None) -> BookingDetail | 
             origin_code=schedule.origin_code or "",
             destination_code=schedule.destination_code or "",
         ) if schedule else None
-        
+
         return BookingDetail(
             booking_id=booking.id,
             user_id=booking.user_id,

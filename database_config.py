@@ -8,8 +8,8 @@ from datetime import datetime
 
 # Database configuration
 DATABASE_URL = os.getenv(
-    "DATABASE_URL", 
-    "postgresql://ticketingmaster:ticketferric@localhost:5432/ticketing_db"
+    'DATABASE_URL', 
+    "postgresql://booking_db_k630_user:QQyzJrkByIDT4egXrzB6Ds58VLqGb0xD@dpg-d227brvdiees73d5qb7g-a.oregon-postgres.render.com/booking_db_k630"
 )
 
 # Create engine
