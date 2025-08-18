@@ -46,7 +46,11 @@ def root():
         "endpoints": {
             "availability": "/api/travel/availability",
             "booking": "/api/book", 
-            "cancellation": "/api/cancel"
+            "cancellation": "/api/cancel",
+            "bookings of a user": "/api/bookings/{user_id}",
+            "booking details": "/api/booking/{booking_id}",
+            "transport modes": "/api/transport-modes",
+            "health": "/health",
         }
     }
 
@@ -170,6 +174,9 @@ def cancel_ticket(
 
 @app.get("/api/bookings/{user_id}")
 def list_user_bookings(user_id: str, db: Session = Depends(get_db)):
+    """
+    Get all bookings for a specific user.
+    """
     bookings = get_user_bookings(user_id=user_id, db=db)
     # Return minimal list
     return [
@@ -187,6 +194,9 @@ def list_user_bookings(user_id: str, db: Session = Depends(get_db)):
 
 @app.get("/api/booking/{booking_id}")
 def get_booking(booking_id: str, db: Session = Depends(get_db)):
+    """
+    Get details of a specific booking.
+    """
     detail = get_booking_details(booking_id=booking_id, db=db)
     if not detail:
         raise HTTPException(status_code=404, detail="Booking not found")
@@ -210,11 +220,11 @@ def health_check():
     return {
         "status": "healthy",
         "service": "Universal Ticketing API",
-        "version": "2.0.0",
+        "version": "1.0.0",
         "database": "connected"
     }
 
 
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+# if __name__ == "__main__":
+#     import uvicorn
+#     uvicorn.run(app, host="0.0.0.0", port=8000)

@@ -1,11 +1,12 @@
 # Train Ticket Booking API
 
-A FastAPI project that mocks ticket booking system. Currently only supports train ticket booking.
+A FastAPI project that mocks ticket booking system. Currently only supports train ticket booking. Connected to cloud database
 
 ## What it does
 
 - Search for booking train tickets
 - Uses Selenium to scrape data from railway websites
+- Connected to cloud postgreSQL database (hosted in render.com)
 
 ## Setup
 
