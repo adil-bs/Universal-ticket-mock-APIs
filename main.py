@@ -1,5 +1,6 @@
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi import Query
 from sqlalchemy.orm import Session
 from database_config import get_db, init_database
 from schemas import (
@@ -173,12 +174,17 @@ def cancel_ticket(
 
 
 @app.get("/api/bookings/{user_id}")
-def list_user_bookings(user_id: str, db: Session = Depends(get_db)):
+def list_user_bookings(
+    user_id: str,
+    show_cancelled: bool = Query(default=True, description="Include cancelled bookings"),
+    db: Session = Depends(get_db)
+):
     """
     Get all bookings for a specific user.
+    Optionally filter out cancelled bookings.
     """
-    bookings = get_user_bookings(user_id=user_id, db=db)
-    # Return minimal list
+    bookings = get_user_bookings(user_id=user_id, db=db, show_cancelled=show_cancelled)
+
     return [
         {
             "booking_id": b.id,

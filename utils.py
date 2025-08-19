@@ -185,16 +185,21 @@ def cancel_booking(booking_id: str, db: Session = None) -> CancellationResponse:
             db.close()
 
 
-def get_user_bookings(user_id: str, db: Session = None):
-    """Get all bookings for a user"""
-    
+def get_user_bookings(user_id: str, db: Session = None, show_cancelled: bool = True):
+    """Get all bookings for a user, with optional cancelled filtering"""
+
     if db is None:
         db = next(get_db())
-    
+
     try:
-        bookings = db.query(Bookings).filter(Bookings.user_id == user_id).all()
+        query = db.query(Bookings).filter(Bookings.user_id == user_id)
+
+        if not show_cancelled:
+            query = query.filter(Bookings.booking_status != "cancelled")
+
+        bookings = query.all()
         return bookings
-        
+
     except Exception as e:
         print(f"Error fetching user bookings: {e}")
         return []
