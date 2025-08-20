@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from train_scraper import TrainScraper
+from scrapers.train_scraper import TrainScraper
 from datetime import timedelta
 from sqlalchemy import or_, and_
 from typing import List, Optional
@@ -10,7 +10,7 @@ from schemas import (
     TransportScheduleResponse,
     SeatAvailabilityResponse,
 )
-import utils
+import scrapers.utils as utils
 
 
 class TransportScraper:
@@ -141,23 +141,16 @@ class TransportScraper:
             )
         
         return response_schedules
+        
 
     def get_availability(self, query: TravelAvailabilityQuery, db: Session) -> TravelAvailabilityResponse:
-        """
-        Main method to get transport availability.
-        First checks database, then scrapes if needed.
-        """
-        # First check database for existing data
-        db_result = self.database_service.search_schedules(query, db)
+        """getting availability from database or from scraper
+        First checks database, then scrapes if needed."""
+        
+        db_result = self.search_schedules(query, db)
         if db_result:
             return db_result
-        
-        # If not found in database, proceed with scraping
-        return self._scrape_availability(query, db)
 
-    def _scrape_availability(self, query: TravelAvailabilityQuery, db: Session) -> TravelAvailabilityResponse:
-        """Delegate scraping to appropriate scraper based on transport mode"""
-        
         if query.mode == "train":
             return self._scrape_trains(query, db)
         elif query.mode == "bus":
@@ -178,7 +171,7 @@ class TransportScraper:
             
             # Save to database if we found schedules
             if schedules:
-                self.database_service.save_schedules(schedules, query, db)
+                self.save_schedules(schedules, query, db)
             
             return TravelAvailabilityResponse(
                 input=query,

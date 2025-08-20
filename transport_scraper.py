@@ -241,7 +241,7 @@ class TransportScraper:
         
         db.commit()
     
-    def scrape_availability(self, query: TravelAvailabilityQuery, db: Session) -> TravelAvailabilityResponse:
+    def get_availability(self, query: TravelAvailabilityQuery, db: Session) -> TravelAvailabilityResponse:
         """Main method to get availability - check database first, then scrape if needed"""
         
         # First check database

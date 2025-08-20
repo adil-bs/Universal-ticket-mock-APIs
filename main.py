@@ -17,7 +17,7 @@ from utils import (
     get_user_bookings,
     get_booking_details,
 )
-from transport_scraper import TransportScraper
+from scrapers.transport_scraper import TransportScraper
 import asyncio
 import concurrent.futures
 
@@ -81,7 +81,7 @@ async def get_travel_availability(
         scraper = TransportScraper()
         
         def run_scraper():
-            return scraper.scrape_availability(request, db)
+            return scraper.get_availability(request, db)
         
         # Use thread pool executor for CPU-bound task
         with concurrent.futures.ThreadPoolExecutor() as executor:

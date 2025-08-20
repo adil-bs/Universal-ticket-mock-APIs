@@ -6,9 +6,9 @@ from selenium.common.exceptions import TimeoutException
 from typing import List
 import time
 
-from webdriver_manager import WebDriverManager
+from scrapers.webdriver_manager import WebDriverManager
 from schemas import TransportScheduleResponse, SeatAvailabilityResponse
-from utils import DateTimeUtils
+import scrapers.utils as utils
 
 
 class TrainScraper(WebDriverManager):
@@ -82,7 +82,7 @@ class TrainScraper(WebDriverManager):
 
     def _select_travel_date(self, travel_date: str):
         """Select travel date from date picker"""
-        ddmm_date = DateTimeUtils.datetime_to_ddmm(travel_date)
+        ddmm_date = utils.datetime_to_ddmm(travel_date)
         all_dates = self.driver.find_elements(By.CSS_SELECTOR, "[id^='date_strip_']")
         
         for date_elem in all_dates:
