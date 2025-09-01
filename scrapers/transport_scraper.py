@@ -1,5 +1,6 @@
 from sqlalchemy.orm import Session
 from scrapers.train_scraper import TrainScraper
+from scrapers.flight_scraper import FlightScraper
 from datetime import timedelta
 from sqlalchemy import or_, and_
 from typing import List, Optional
@@ -22,6 +23,7 @@ class TransportScraper:
     
     def __init__(self):
         self.train_scraper = TrainScraper()
+        self.flight_scraper = FlightScraper()
 
     def search_schedules(self, query: TravelAvailabilityQuery, db: Session) -> Optional[TravelAvailabilityResponse]:
         """Search for existing schedules in database"""
@@ -144,7 +146,7 @@ class TransportScraper:
         
 
     def get_availability(self, query: TravelAvailabilityQuery, db: Session) -> TravelAvailabilityResponse:
-        """getting availability from database or from scraper
+        """Getting availability from database or from scraper
         First checks database, then scrapes if needed."""
         
         db_result = self.search_schedules(query, db)
@@ -156,7 +158,7 @@ class TransportScraper:
         elif query.mode == "bus":
             return self._create_not_implemented_response(query, "Bus scraping not implemented yet")
         elif query.mode == "flight":
-            return self._create_not_implemented_response(query, "Flight scraping not implemented yet")
+            return self._scrape_flights(query, db)
         else:
             return self._create_error_response(query, f"Unsupported transport mode: {query.mode}")
 
@@ -183,6 +185,30 @@ class TransportScraper:
             
         except Exception as e:
             return self._create_error_response(query, f"Train scraping error: {str(e)}")
+
+    def _scrape_flights(self, query: TravelAvailabilityQuery, db: Session) -> TravelAvailabilityResponse:
+        """Handle flight scraping workflow"""
+        try:
+            schedules = self.flight_scraper.scrape_flight_schedules(
+                origin=query.origin,
+                destination=query.destination,
+                travel_date=query.datetime
+            )
+            
+            # Save to database if we found schedules
+            if schedules:
+                self.save_schedules(schedules, query, db)
+            
+            return TravelAvailabilityResponse(
+                input=query,
+                schedules=schedules,
+                status="success",
+                message=f"Successfully scraped {len(schedules)} flights",
+                source="scraper"
+            )
+            
+        except Exception as e:
+            return self._create_error_response(query, f"Flight scraping error: {str(e)}")
 
     def _create_not_implemented_response(self, query: TravelAvailabilityQuery, message: str) -> TravelAvailabilityResponse:
         """Create a response for not implemented transport modes"""

@@ -4,6 +4,7 @@ from selenium.webdriver.edge.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
+from selenium.webdriver.common.by import By
 from webdriver_manager.microsoft import EdgeChromiumDriverManager
 import os
 
@@ -25,7 +26,7 @@ class WebDriverManager:
             edge_driver_path = os.getenv('EDGE_DRIVER_PATH')
             if not edge_driver_path:
                 raise Exception("EDGE_DRIVER_PATH environment variable not set and EdgeChromiumDriverManager failed")
-            
+            print(f"Using edge driver path: {edge_driver_path}")
             service = Service(edge_driver_path)
             self.driver = webdriver.Edge(service=service, options=options)
         
@@ -67,12 +68,61 @@ class WebDriverManager:
         except TimeoutException:
             return None
 
+    def safe_find_elements(self, by, value, timeout=10):
+        """Safely find multiple elements with timeout"""
+        try:
+            WebDriverWait(self.driver, timeout).until(
+                EC.presence_of_element_located((by, value))
+            )
+            return self.driver.find_elements(by, value)
+        except TimeoutException:
+            return []
+
     def safe_click_element(self, element):
         """Safely click element using JavaScript if normal click fails"""
         try:
             element.click()
         except:
             self.driver.execute_script("arguments[0].click();", element)
+
+    def wait_for_element_clickable(self, by, value, timeout=10):
+        """Wait for element to be clickable and return it"""
+        try:
+            return WebDriverWait(self.driver, timeout).until(
+                EC.element_to_be_clickable((by, value))
+            )
+        except TimeoutException:
+            return None
+
+    def wait_for_text_in_element(self, by, value, text, timeout=10):
+        """Wait for specific text to appear in element"""
+        try:
+            return WebDriverWait(self.driver, timeout).until(
+                EC.text_to_be_present_in_element((by, value), text)
+            )
+        except TimeoutException:
+            return False
+
+    def scroll_to_element(self, element):
+        """Scroll element into view"""
+        try:
+            self.driver.execute_script("arguments[0].scrollIntoView(true);", element)
+        except Exception as e:
+            print(f"Error scrolling to element: {e}")
+
+    def get_element_text_safe(self, element):
+        """Safely get text from element"""
+        try:
+            return element.text.strip()
+        except Exception:
+            return ""
+
+    def get_element_attribute_safe(self, element, attribute):
+        """Safely get attribute from element"""
+        try:
+            return element.get_attribute(attribute)
+        except Exception:
+            return ""
 
     def quit(self):
         """Safely quit the driver"""
