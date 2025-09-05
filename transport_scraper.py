@@ -21,6 +21,9 @@ from schemas import (
     SeatAvailabilityResponse,
 )
 
+from dotenv import load_dotenv
+load_dotenv()
+
 
 class TransportScraper:
     """Unified scraper class for different transport modes"""

@@ -6,10 +6,12 @@ from sqlalchemy.dialects.postgresql import UUID
 import uuid
 from datetime import datetime
 
+from dotenv import load_dotenv
+load_dotenv()
+
 # Database configuration
 DATABASE_URL = os.getenv(
     'DATABASE_URL', 
-    "postgresql://ticketingmaster:ticketferric@localhost:5432/ticketing_db"
 )
 
 # Create engine

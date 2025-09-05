@@ -7,7 +7,8 @@ from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.by import By
 from webdriver_manager.microsoft import EdgeChromiumDriverManager
 import os
-
+from dotenv import load_dotenv
+load_dotenv()
 
 class WebDriverManager:
     """Manages WebDriver setup and configuration"""

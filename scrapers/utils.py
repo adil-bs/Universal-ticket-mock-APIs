@@ -1,63 +1,31 @@
 from datetime import datetime, timedelta
+from dateutil.parser import parse
 from typing import Optional, Tuple
 
 def datetime_to_ddmm(datetime_str: str) -> str:
     """
-    Convert datetime string (YYYY-MM-DD or YYYY-MM-DD HH:MM:SS) to DDMM format
-    Examples: "2024-08-11" -> "11Aug", "2024-05-01" -> "1May"
+    Convert any datetime string (e.g., "YYYY-MM-DD", "YYYY-MM-DD HH:MM:SS", or ISO formats)
+    to DDMM format (e.g., "11Aug", "1May").
     """
     try:
-        # Handle both with and without time part
-        if ' ' in datetime_str:
-            date_part = datetime_str.split(' ')[0]
-        else:
-            date_part = datetime_str
-        
-        dt = datetime.strptime(date_part, '%Y-%m-%d')
-        
-        # Get day without leading zero
-        day = str(dt.day)
-        
-        # Get month abbreviation
-        month_names = {
-            1: 'Jan', 2: 'Feb', 3: 'Mar', 4: 'Apr', 5: 'May', 6: 'Jun',
-            7: 'Jul', 8: 'Aug', 9: 'Sep', 10: 'Oct', 11: 'Nov', 12: 'Dec'
-        }
-        month = month_names[dt.month]
-        
-        return f"{day}{month}"
+        dt = parse(datetime_str)
+        return f"{dt.day}{dt.strftime('%b')}"
     except Exception as e:
-        print(f"Error converting datetime {datetime_str} to DDMM format: {e}")
+        print(f"Error converting datetime {datetime_str}: {e}")
         return datetime_str
 
-def extract_day_month_from_date(datetime_str: str) -> Tuple[str, str]:
+def extract_day_month_from_date(datetime_str: str) -> tuple[str, str]:
     """
-    Extract day and month name from datetime string for flight calendar selection
+    Extract day and month name from any datetime string for flight calendar selection.
     Args:
-        datetime_str: Date string in format "YYYY-MM-DD" or "YYYY-MM-DD HH:MM:SS"
+        datetime_str: Date string in any reasonable format.
     Returns:
         Tuple of (day, month_name) - e.g., ("21", "August")
     """
     try:
-        # Handle both with and without time part
-        if ' ' in datetime_str:
-            date_part = datetime_str.split(' ')[0]
-        else:
-            date_part = datetime_str
-        
-        dt = datetime.strptime(date_part, '%Y-%m-%d')
-        
-        # Get day without leading zero
+        dt = parse(datetime_str)
         day = str(dt.day)
-        
-        # Get full month name
-        month_names = {
-            1: 'January', 2: 'February', 3: 'March', 4: 'April', 
-            5: 'May', 6: 'June', 7: 'July', 8: 'August',
-            9: 'September', 10: 'October', 11: 'November', 12: 'December'
-        }
-        month = month_names[dt.month]
-        
+        month = dt.strftime("%B")  # Full month name via strftime
         return day, month
     except Exception as e:
         print(f"Error extracting day/month from {datetime_str}: {e}")
@@ -65,39 +33,41 @@ def extract_day_month_from_date(datetime_str: str) -> Tuple[str, str]:
 
 def time_to_datetime(time_str: str, base_date: str) -> datetime:
     """
-    Convert time string (HH:MM) to full datetime using base_date
+    Convert time string (HH:MM) to full datetime using any base_date format.
     Args:
-        time_str: Time in format "HH:MM"
-        base_date: Date string in format "YYYY-MM-DD"
+        time_str: Time (e.g. "HH:MM" or with seconds).
+        base_date: Any reasonable date string (any format).
     Returns:
         datetime object
     """
     try:
-        # Handle base_date with or without time part
-        if ' ' in base_date:
-            date_part = base_date.split(' ')[0]
-        else:
-            date_part = base_date
-        
-        # Combine date and time
-        datetime_str = f"{date_part} {time_str}:00"
-        return datetime.strptime(datetime_str, '%Y-%m-%d %H:%M:%S')
+        # Parse the base date robustly
+        base_dt = parse(base_date)
+        # Parse the time string and update base_dt
+        t = parse(time_str)
+        # Combine: preserve the original date, update only the time from 'time_str'
+        combined_dt = base_dt.replace(
+            hour=t.hour,
+            minute=t.minute,
+            second=t.second if hasattr(t, 'second') else 0,
+            microsecond=t.microsecond if hasattr(t, 'microsecond') else 0,
+        )
+        return combined_dt
     except Exception as e:
         print(f"Error converting time {time_str} with base date {base_date}: {e}")
-        # Return a default datetime if conversion fails
-        return datetime.strptime(f"{base_date} 00:00:00", '%Y-%m-%d %H:%M:%S')
+        # Return just the parsed base date at midnight on failure
+        return parse(base_date).replace(hour=0, minute=0, second=0, microsecond=0)
 
 def parse_query_date(datetime_str: str) -> tuple[datetime, datetime]:
     """
-    Parse query datetime to get start and end of day
+    Parse query datetime string to get start and end of day.
+    Accepts flexible datetime string formats.
     Returns: (start_of_day, end_of_day)
     """
-    if ' ' in datetime_str:
-        date_part = datetime_str.split(' ')[0]
-    else:
-        date_part = datetime_str
+    # Use dateutil to flexibly parse the string into a datetime
+    query_date = parse(datetime_str)
     
-    query_date = datetime.strptime(date_part, '%Y-%m-%d')
+    # Normalize to start and end of day
     start_of_day = query_date.replace(hour=0, minute=0, second=0, microsecond=0)
     end_of_day = query_date.replace(hour=23, minute=59, second=59, microsecond=999999)
     
